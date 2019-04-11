@@ -1,5 +1,8 @@
 **xyz April 2019**
 
+# Environment
+- pytorch 1.0
+
 # Building
 ./build.sh
 ./cp_so.sh
