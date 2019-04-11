@@ -1,0 +1,7 @@
+build
+dist
+cv_ops_pytorch.egg-info
+.ropeproject
+*.swp
+*.so
+__pycache__
