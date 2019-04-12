@@ -56,6 +56,11 @@ roi_align = _ROIAlignRotated.apply
 
 class ROIAlignRotated(nn.Module):
     def __init__(self, output_size, spatial_scale, sampling_ratio):
+        '''
+        output_size:[pooled_height, pooled_width]
+        spatial_scale: size_of_map/size_of_original_image
+        sampling_ratio: how many points to use for bilinear_interpolate
+        '''
         super(ROIAlignRotated, self).__init__()
         self.output_size = output_size # (7,7)
         self.spatial_scale = spatial_scale # 0.25
@@ -65,7 +70,7 @@ class ROIAlignRotated(nn.Module):
         '''
         input: [batch_size, feature, w, h]
         rois: [n,5] [batch_ind, center_w, center_h, roi_width, roi_height, theta]
-            theta unit: degree
+            theta unit: degree, anti-clock wise is positive
         '''
         assert rois.shape[1] == 6
         return roi_align(
@@ -83,18 +88,21 @@ class ROIAlignRotated(nn.Module):
 
 
 if __name__ == '__main__':
-    import torch
+    # note: output_size: [h,w],  rois: [w,h]
+    # order is different
 
-    align_roi = ROIAlignRotated((2, 2), 0.5, 2)
+    align_roi = ROIAlignRotated((1, 3), 1, 2)
     feat = torch.arange(64).view(1, 1, 8, 8).float()
     # Note: first element is batch_idx
     rois = torch.tensor([
-          [0, 1,2, 1,1, 0],
-          [0, 1.1,2, 1.5,0.7, 0],
-          [0, 1.1,2, 1.5,0.7, 10],
+          [0, 3,3, 3,1, 0],
+          [0, 3,3, 3,1, 90],
+          [0, 3,3, 3,1, -90],
+          [0, 3,3, 3,1, 30],
+          [0, 3,3, 3,1, 60],
           ], dtype=torch.float32).view(-1, 6)
 
-    print(f'feat:\n{feat}rois:\n{rois}')
+    print(f'feat:\n{feat}\nrois:\n{rois}')
 
     print('------------test on cpu------------')
     feat.requires_grad = False
