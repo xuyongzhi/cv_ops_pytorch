@@ -21,7 +21,8 @@ at::Tensor ROIAlignRotated_forward(const at::Tensor& input,
     AT_ERROR("Not compiled with GPU support");
 #endif
   }
-  return ROIAlignRotated_forward_cpu(input, rois, spatial_scale, pooled_height, pooled_width, sampling_ratio);
+  //return ROIAlignRotated_forward_cpu(input, rois, spatial_scale, pooled_height, pooled_width, sampling_ratio);
+  AT_ERROR("Not implemented on the CPU");
 }
 
 at::Tensor ROIAlignRotated_backward(const at::Tensor& grad,

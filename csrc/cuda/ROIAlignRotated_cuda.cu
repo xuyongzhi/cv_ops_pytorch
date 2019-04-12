@@ -97,8 +97,8 @@ __global__ void RoIAlignRotatedForward(
     T theta = offset_bottom_rois[5] * M_PI / 180.0;
 
     // Force malformed ROIs to be 1x1
-    roi_width = c10::cuda::compat::max(roi_width, (T)1.);
-    roi_height = c10::cuda::compat::max(roi_height, (T)1.);
+    roi_width = max(roi_width, (T)1.);
+    roi_height = max(roi_height, (T)1.);
     T bin_size_h = static_cast<T>(roi_height) / static_cast<T>(pooled_height);
     T bin_size_w = static_cast<T>(roi_width) / static_cast<T>(pooled_width);
 
@@ -203,7 +203,7 @@ __device__ void bilinear_interpolate_gradient(
 }
 
 template <typename T>
-__global__ void RoIAlignBackwardFeature(
+__global__ void RoIAlignRotatedBackwardFeature(
     const int nthreads, 
     const T* top_diff,
     const int num_rois, 
@@ -238,8 +238,8 @@ __global__ void RoIAlignBackwardFeature(
     // T roi_height = round(offset_bottom_rois[4] * spatial_scale);
 
     // Force malformed ROIs to be 1x1
-    roi_width = c10::cuda::compat::max(roi_width, (T)1.);
-    roi_height = c10::cuda::compat::max(roi_height, (T)1.);
+    roi_width = max(roi_width, (T)1.);
+    roi_height = max(roi_height, (T)1.);
     T bin_size_h = static_cast<T>(roi_height) / static_cast<T>(pooled_height);
     T bin_size_w = static_cast<T>(roi_width) / static_cast<T>(pooled_width);
 
@@ -331,7 +331,7 @@ at::Tensor ROIAlignRotated_forward_cuda(const at::Tensor& input,
   }
 
   AT_DISPATCH_FLOATING_TYPES(input.type(), "ROIAlignRotated_forward", [&] {
-    RoIAlignForward<scalar_t><<<grid, block, 0, stream>>>(
+    RoIAlignRotatedForward<scalar_t><<<grid, block, 0, stream>>>(
          output_size,
          input.contiguous().data<scalar_t>(),
          spatial_scale,
@@ -377,7 +377,7 @@ at::Tensor ROIAlignRotated_backward_cuda(const at::Tensor& grad,
   }
 
   AT_DISPATCH_FLOATING_TYPES(grad.type(), "ROIAlignRotated_backward", [&] {
-    RoIAlignBackwardFeature<scalar_t><<<grid, block, 0, stream>>>(
+    RoIAlignRotatedBackwardFeature<scalar_t><<<grid, block, 0, stream>>>(
          grad.numel(),
          grad.contiguous().data<scalar_t>(),
          num_rois,

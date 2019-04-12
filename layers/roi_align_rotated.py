@@ -8,7 +8,7 @@ from torch.nn.modules.utils import _pair
 import cv_ops_lib
 print(cv_ops_lib.__file__)
 
-class _ROIAlign(Function):
+class _ROIAlignRotated(Function):
     @staticmethod
     def forward(ctx, input, roi, output_size, spatial_scale, sampling_ratio):
         ctx.save_for_backward(roi)
@@ -22,7 +22,7 @@ class _ROIAlign(Function):
         # output_size: [7,7]
         # sampling_ratio: 2
         #output = cv_ops_lib.roi_align_forward(
-        output = cv_ops_lib.roi_align_forward(
+        output = cv_ops_lib.roi_align_rotated_forward(
             input, roi, spatial_scale, output_size[0], output_size[1], sampling_ratio
         ) # [171, 256, 7, 7]
         return output
@@ -36,7 +36,7 @@ class _ROIAlign(Function):
         sampling_ratio = ctx.sampling_ratio
         bs, ch, h, w = ctx.input_shape
         #grad_input = cv_ops_lib.roi_align_backward(
-        grad_input = cv_ops_lib.roi_align_backward(
+        grad_input = cv_ops_lib.roi_align_rotated_backward(
             grad_output,
             rois,
             spatial_scale,
@@ -51,12 +51,12 @@ class _ROIAlign(Function):
         return grad_input, None, None, None, None
 
 
-roi_align = _ROIAlign.apply
+roi_align = _ROIAlignRotated.apply
 
 
-class ROIAlign(nn.Module):
+class ROIAlignRotated(nn.Module):
     def __init__(self, output_size, spatial_scale, sampling_ratio):
-        super(ROIAlign, self).__init__()
+        super(ROIAlignRotated, self).__init__()
         self.output_size = output_size # (7,7)
         self.spatial_scale = spatial_scale # 0.25
         self.sampling_ratio = sampling_ratio # 2
@@ -64,9 +64,10 @@ class ROIAlign(nn.Module):
     def forward(self, input, rois):
         '''
         input: [batch_size, feature, w, h]
-        rois: [n,5] [batch_ind, start_w, start_h, end_w, end_h]
+        rois: [n,5] [batch_ind, center_w, center_h, roi_width, roi_height, theta]
+            theta unit: degree
         '''
-        assert rois.shape[1] == 5
+        assert rois.shape[1] == 6
         return roi_align(
             input, rois, self.output_size, self.spatial_scale, self.sampling_ratio
         )
@@ -84,21 +85,23 @@ class ROIAlign(nn.Module):
 if __name__ == '__main__':
     import torch
 
-    align_roi = ROIAlign((2,2), 0.5, 2)
+    align_roi = ROIAlignRotated((2, 2), 0.5, 2)
     feat = torch.arange(64).view(1, 1, 8, 8).float()
     # Note: first element is batch_idx
     rois = torch.tensor([
-          [0, 0,1,2,3],
-          [0, 0.2,1,2.1,3.4],
-          ], dtype=torch.float32).view(-1, 5)
+          [0, 1,2, 1,1, 0],
+          [0, 1.1,2, 1.5,0.7, 0],
+          [0, 1.1,2, 1.5,0.7, 10],
+          ], dtype=torch.float32).view(-1, 6)
 
-    print(f'feat:\n{feat}\nrois:\n{rois}')
+    print(f'feat:\n{feat}rois:\n{rois}')
 
     print('------------test on cpu------------')
     feat.requires_grad = False
-    out = align_roi(feat, rois)
-    print(out)
-    print('cpu version do not support backward')
+    if False:
+      out = align_roi(feat, rois)
+      print(out)
+      print('cpu version do not support backward')
     #out.sum().backward()
     #print(feat.grad)
 
