@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # from ._utils import _C
-from maskrcnn_benchmark import _C
+import cv_ops_lib
 
-nms = _C.nms
+nms = cv_ops_lib.nms
 # nms.__doc__ = """
 # This function performs Non-maximum suppresion"""
