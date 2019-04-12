@@ -6,7 +6,7 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
 import cv_ops_lib
-print(cv_ops_lib.__file__)
+#print(cv_ops_lib.__file__)
 
 class _ROIAlignRotated(Function):
     @staticmethod
