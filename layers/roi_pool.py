@@ -5,7 +5,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from maskrcnn_benchmark import _C
+import _C
 
 
 class _ROIPool(Function):
@@ -61,41 +61,3 @@ class ROIPool(nn.Module):
         tmpstr += ", spatial_scale=" + str(self.spatial_scale)
         tmpstr += ")"
         return tmpstr
-
-
-
-if __name__ == '__main__':
-    import torch
-
-    pool_roi = ROIPool((2, 2), 1)
-    feat = torch.arange(64).view(1, 1, 8, 8).float()
-    # Note: first element is batch_idx
-    rois = torch.tensor([
-          [0,1,3,2,4],
-          [0, 1.2, 3, 2, 4.3],
-          [0, 1.2, 3, 2, 4.6]
-          ], dtype=torch.float32).view(-1, 5)
-
-    print(f'feat:\n{feat}rois:\n{rois}')
-
-    print('------------test on cpu------------')
-    feat.requires_grad = False
-    #out = pool_roi(feat, rois)
-    #print(out)
-    #print('cpu version do not support backward')
-    #out.sum().backward()
-    #print(feat.grad)
-
-    if torch.cuda.is_available():
-        print('------------test on gpu------------')
-        feat = feat.detach().cuda()
-        rois = rois.cuda()
-        feat.requires_grad = True
-        out = pool_roi(feat, rois)
-        print(out)
-        temp = out.sum()
-        temp.backward()
-        print(feat.grad)
-    else:
-        print('You device have not a GPU')
-

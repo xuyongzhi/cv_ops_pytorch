@@ -1,4 +1,4 @@
-# borrow from
+# xyz  borrow from
 # https://github.com/facebookresearch/maskrcnn-benchmark/blob/master/setup.py
 #!/usr/bin/env python
 
@@ -46,7 +46,7 @@ def get_extensions():
 
     ext_modules = [
         extension(
-            "cv_ops_lib",
+            "cv_ops_lib._C",
             sources,
             include_dirs=include_dirs,
             define_macros=define_macros,

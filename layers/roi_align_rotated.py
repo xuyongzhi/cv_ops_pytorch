@@ -5,8 +5,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-import cv_ops_lib
-#print(cv_ops_lib.__file__)
+import _C
 
 class _ROIAlignRotated(Function):
     @staticmethod
@@ -21,8 +20,7 @@ class _ROIAlignRotated(Function):
         # spatial_scale: 0.25
         # output_size: [7,7]
         # sampling_ratio: 2
-        #output = cv_ops_lib.roi_align_forward(
-        output = cv_ops_lib.roi_align_rotated_forward(
+        output = _C.roi_align_rotated_forward(
             input, roi, spatial_scale, output_size[0], output_size[1], sampling_ratio
         ) # [171, 256, 7, 7]
         return output
@@ -35,8 +33,7 @@ class _ROIAlignRotated(Function):
         spatial_scale = ctx.spatial_scale
         sampling_ratio = ctx.sampling_ratio
         bs, ch, h, w = ctx.input_shape
-        #grad_input = cv_ops_lib.roi_align_backward(
-        grad_input = cv_ops_lib.roi_align_rotated_backward(
+        grad_input = _C.roi_align_rotated_backward(
             grad_output,
             rois,
             spatial_scale,
