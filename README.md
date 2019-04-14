@@ -11,7 +11,7 @@
 - gcc 5.5
 
 # Building
-./build.sh (build so only, not installed)
+./build.sh (build so only, not installed)  
 ./cp_so.sh
 
 just ignore errors for rm non exist directories
